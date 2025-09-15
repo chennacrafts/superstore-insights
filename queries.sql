@@ -88,4 +88,105 @@ GROUP BY product_name
 ORDER BY profit DESC
 LIMIT 10;
 
+-- 11)Yearly Sales & Profit Trend
+SELECT YEAR(order_date) AS order_year,
+       ROUND(SUM(sales),2) AS total_sales,
+       ROUND(SUM(profit),2) AS total_profit
+FROM superstore
+GROUP BY order_year
+ORDER BY order_year;
+
+-- 12) Top 5 Customers by Total Sales
+SELECT customer_id,
+       customer_name,
+       ROUND(SUM(sales),2) AS total_sales,
+       ROUND(SUM(profit),2) AS total_profit
+FROM superstore
+GROUP BY customer_id, customer_name
+ORDER BY total_sales DESC
+LIMIT 5;
+
+--13) Profit by Sub-Category
+SELECT sub_category,
+       ROUND(SUM(sales),2) AS total_sales,
+       ROUND(SUM(profit),2) AS total_profit,
+       ROUND(100 * SUM(profit)/NULLIF(SUM(sales),0),2) AS profit_margin_pct
+FROM superstore
+GROUP BY sub_category
+ORDER BY profit_margin_pct DESC;
+
+--14) Sales by Ship Mode
+SELECT ship_mode,
+       COUNT(DISTINCT order_id) AS num_orders,
+       ROUND(SUM(sales),2) AS total_sales,
+       ROUND(SUM(profit),2) AS total_profit
+FROM superstore
+GROUP BY ship_mode
+ORDER BY total_sales DESC;
+
+--15) Discount Impact on Profit
+SELECT 
+       CASE 
+         WHEN discount = 0 THEN 'No Discount'
+         WHEN discount BETWEEN 0.01 AND 0.20 THEN 'Low Discount (0-20%)'
+         WHEN discount BETWEEN 0.21 AND 0.50 THEN 'Medium Discount (21-50%)'
+         ELSE 'High Discount (50%+)' 
+       END AS discount_band,
+       ROUND(SUM(sales),2) AS total_sales,
+       ROUND(SUM(profit),2) AS total_profit,
+       ROUND(100 * SUM(profit)/NULLIF(SUM(sales),0),2) AS profit_margin_pct
+FROM superstore
+GROUP BY discount_band
+ORDER BY total_sales DESC;
+
+-- 16) Region-wise Top Category
+SELECT region, category, sales
+FROM (
+   SELECT region, category, SUM(sales) AS sales,
+          RANK() OVER (PARTITION BY region ORDER BY SUM(sales) DESC) AS rnk
+   FROM superstore
+   GROUP BY region, category
+) t
+WHERE rnk = 1;
+
+-- 17) SELECT region, category, sales
+FROM (
+   SELECT region, category, SUM(sales) AS sales,
+          RANK() OVER (PARTITION BY region ORDER BY SUM(sales) DESC) AS rnk
+   FROM superstore
+   GROUP BY region, category
+) t
+WHERE rnk = 1;
+
+--18) Cumulative Monthly Sales (Running Total)
+SELECT order_month,
+       SUM(SUM(sales)) OVER (ORDER BY order_month) AS cumulative_sales
+FROM superstore
+GROUP BY order_month
+ORDER BY order_month;
+
+-- 19) Most Frequently Ordered Products
+SELECT product_name,
+       COUNT(DISTINCT order_id) AS num_orders,
+       ROUND(SUM(sales),2) AS total_sales
+FROM superstore
+GROUP BY product_name
+ORDER BY num_orders DESC
+LIMIT 10;
+
+--20) Customer Lifetime Value
+SELECT customer_id,
+       ROUND(SUM(sales),2) AS total_sales,
+       ROUND(SUM(profit),2) AS total_profit,
+       MIN(order_date) AS first_purchase,
+       MAX(order_date) AS last_purchase,
+       DATEDIFF(MAX(order_date), MIN(order_date)) AS days_active
+FROM superstore
+GROUP BY customer_id
+ORDER BY total_profit DESC
+LIMIT 10;
+
+
+
+
 
