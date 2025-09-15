@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment files (DO NOT commit secrets)
+.env
+.env.* 
+
+# Virtual environments
+venv/
+env/
+*.venv
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Power BI and other large binary files
+*.pbix
+*.pbit
+
+# Git LFS attributes
+.gitattributes
