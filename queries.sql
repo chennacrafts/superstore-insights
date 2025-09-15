@@ -52,3 +52,40 @@ SELECT category,
 FROM superstore
 GROUP BY category
 ORDER BY return_rate_pct DESC;
+
+-- 7) Monthly trend by actual date for plotting (first-of-month)
+SELECT DATE_FORMAT(order_date, '%Y-%m-01') AS month_start,
+       ROUND(SUM(sales),2) AS total_sales
+FROM superstore
+GROUP BY month_start
+ORDER BY month_start;
+
+-- 8) Top product per category
+SELECT category, product_name, sales
+FROM (
+  SELECT category, product_name,
+         SUM(sales) AS sales,
+         ROW_NUMBER() OVER (PARTITION BY category ORDER BY SUM(sales) DESC) AS rn
+  FROM superstore
+  GROUP BY category, product_name
+) t
+WHERE rn = 1
+ORDER BY category;
+
+-- 9) Cumulative sales
+SELECT order_date,
+       SUM(SUM(sales)) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_sales
+FROM superstore
+GROUP BY order_date
+ORDER BY order_date;
+
+-- 10) Profit contribution (%) per product
+SELECT product_name,
+       ROUND(SUM(profit),2) AS profit,
+       ROUND(100 * SUM(profit) / (SELECT SUM(profit) FROM superstore),2) AS profit_pct_of_total
+FROM superstore
+GROUP BY product_name
+ORDER BY profit DESC
+LIMIT 10;
+
+
